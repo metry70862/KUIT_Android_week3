@@ -6,7 +6,7 @@ import com.sadturtleman.kuit.domain.repository.BookRepository
 class GetBookmarkedBooksUseCase(
     private val repository: BookRepository
 ) {
-    suspend operator fun invoke(): List<Book> {
+    operator fun invoke(): List<Book> {
         return repository.getBookmarkedBooks()
     }
 }
