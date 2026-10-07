@@ -47,7 +47,7 @@ fun HomeScreen(
     onBookClick: (String) -> Unit,
     onBookmarkClick: () -> Unit
 ) {
-    var searchText by remember { mutableStateOf(state.query) }
+    var searchText by remember { mutableStateOf("") }
     val bookmarkCount = state.books.count { book -> book.isBookmarked }
     Scaffold(
         topBar = {
