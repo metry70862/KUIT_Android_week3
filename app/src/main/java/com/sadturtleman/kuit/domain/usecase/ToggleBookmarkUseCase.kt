@@ -6,7 +6,7 @@ import com.sadturtleman.kuit.domain.repository.BookRepository
 class ToggleBookmarkUseCase(
     private val repository: BookRepository
 ) {
-    operator fun invoke(id: Int): Book? {
+    operator fun invoke(id: String): Book? {
         return repository.toggleBookmark(id)
     }
 }

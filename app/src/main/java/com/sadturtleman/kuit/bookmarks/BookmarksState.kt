@@ -10,6 +10,6 @@ sealed interface BookmarksIntent {
     data object Refresh : BookmarksIntent
 
     data class ToggleBookmark(
-        val id: Int
+        val id: String
     ) : BookmarksIntent
 }

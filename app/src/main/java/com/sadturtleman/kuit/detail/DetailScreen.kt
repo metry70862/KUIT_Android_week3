@@ -14,6 +14,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -28,8 +29,16 @@ import com.sadturtleman.kuit.ui.theme.Typography
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DetailScreen(
-    state: DetailUiState, onIntent: (DetailIntent) -> Unit, onBack: () -> Unit
+    bookId: String,
+    state: DetailUiState,
+    onIntent: (DetailIntent) -> Unit,
+    onBack: () -> Unit
 ) {
+    LaunchedEffect(bookId) { //처음 실행, bookId 변경시에 로드
+        onIntent(
+            DetailIntent.Load(bookId)
+        )
+    }
     Scaffold(
         topBar = {
             TopBar(
@@ -72,6 +81,7 @@ fun DetailScreen(
 private fun DetailContent(
     book: Book, onBookmarkClick: () -> Unit
 ) {
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -94,7 +104,7 @@ private fun DetailContent(
         Spacer(modifier = Modifier.height(5.dp))
 
         Text(
-            text = "${book.pages}p · ${book.year}",
+            text = "${book.pageCount ?: "페이지 정보 없음"}p · ${book.publishedDate ?: "발행이 정보 없음"}",
             style = Typography.bodyMedium,
             color = Color(0xFF79747E)
         )
@@ -131,7 +141,7 @@ private fun DetailContent(
         Spacer(modifier = Modifier.height(8.dp))
 
         Text(
-            text = book.description,
+            text = book.description.take(200),
             style = Typography.bodyMedium,
             fontSize = 14.sp,
             color = Color(0xFF49454F)
@@ -143,18 +153,20 @@ private fun DetailContent(
 @Composable
 private fun DetailScreenPrev() {
     DetailScreen(
+        bookId = "1",
         state = DetailUiState(
             isLoading = false,
-            Book(
-                id = 1,
+            book = Book(
+                id = "1",
                 title = "Kotlin in Action",
                 author = "Dmitry Jemerov",
-                pages = 360,
-                year = 2017,
-                description = "코틀린을 설명하는 책입니다.",
+                pageCount = 360,
+                publishedDate = "2017",
+                description = "코틀린을 설명하는 책입니다. 이 설명은 200까지 표시됩니다. ",
                 isBookmarked = true
             )
         ),
         onIntent = {},
-        onBack = {})
+        onBack = {}
+    )
 }

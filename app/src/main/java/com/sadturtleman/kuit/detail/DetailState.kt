@@ -9,5 +9,9 @@ data class DetailUiState(
 )
 
 sealed interface DetailIntent {
+    data class Load(
+        val id: String
+    ) : DetailIntent
+
     data object ToggleBookmark : DetailIntent
 }

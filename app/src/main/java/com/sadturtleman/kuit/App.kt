@@ -11,7 +11,8 @@ import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.sadturtleman.kuit.bookmarks.BookmarksScreen
 import com.sadturtleman.kuit.bookmarks.BookmarksViewModel
-import com.sadturtleman.kuit.data.repository.FakeBookRepository
+import com.sadturtleman.kuit.data.Network
+import com.sadturtleman.kuit.data.repository.BookRepositoryImpl
 import com.sadturtleman.kuit.detail.DetailScreen
 import com.sadturtleman.kuit.detail.DetailViewModel
 import com.sadturtleman.kuit.domain.usecase.GetBookUseCase
@@ -26,7 +27,7 @@ import kotlinx.serialization.Serializable
 data object Home : NavKey
 
 @Serializable
-data class Detail(val id: Int) : NavKey
+data class Detail(val id: String) : NavKey
 
 @Serializable
 data object Bookmarks : NavKey
@@ -35,7 +36,8 @@ data object Bookmarks : NavKey
 fun App() {
     //세개의 화면에서 하나의 리포지토리 공유
     val repository = remember {
-        FakeBookRepository()
+        BookRepositoryImpl(api = Network.bookApi)
+
     }
     //홈, 북마크 화면 뷰모델은 여기서 생성
     //디테일 화면 뷰모델은 id 별로 필요하기 때문에 entryProvider에서 생성
@@ -86,7 +88,6 @@ fun App() {
                     key = "detail-${detail.id}" //detail 화면마다 책 번호가 다르기 때문에 id를 key에 포함
                 ) {
                     DetailViewModel(
-                        bookId = detail.id,
                         getBookUseCase = GetBookUseCase(repository),
                         toggleBookmarkUseCase = ToggleBookmarkUseCase(repository)
                     )
@@ -95,6 +96,7 @@ fun App() {
                 val state by detailViewModel.state.collectAsStateWithLifecycle()
 
                 DetailScreen(
+                    bookId = detail.id,
                     state = state,
                     onIntent = detailViewModel::onIntent,
                     onBack = {

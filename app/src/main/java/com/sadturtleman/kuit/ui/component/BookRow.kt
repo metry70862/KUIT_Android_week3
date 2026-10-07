@@ -74,11 +74,11 @@ fun BookRow(
 private fun BookRowPrev() {
     BookRow(
         book = Book(
-            id = 1,
+            id = "1",
             title = "Kotlin in Action",
             author = "Dmitry Jemerov",
-            pages = 360,
-            year = 2017,
+            pageCount = 360,
+            publishedDate = "2017",
             description = "코틀린을 설명하는 책입니다.",
             isBookmarked = true
         ),

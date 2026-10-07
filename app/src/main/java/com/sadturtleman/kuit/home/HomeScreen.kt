@@ -3,21 +3,31 @@ package com.sadturtleman.kuit.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -34,9 +44,11 @@ import com.sadturtleman.kuit.ui.theme.KuitTheme
 fun HomeScreen(
     state: HomeState,
     onIntent: (HomeIntent) -> Unit,
-    onBookClick: (Int) -> Unit,
+    onBookClick: (String) -> Unit,
     onBookmarkClick: () -> Unit
 ) {
+    var searchText by remember { mutableStateOf(state.query) }
+    val bookmarkCount = state.books.count { book -> book.isBookmarked }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -57,7 +69,7 @@ fun HomeScreen(
         },
         floatingActionButton = {
             Text(
-                text = "★ 북마크 2",
+                text = "★ 북마크${bookmarkCount}",
                 color = Color(0xFF6750A4),
                 fontWeight = FontWeight.Medium,
                 fontSize = 15.sp,
@@ -74,33 +86,86 @@ fun HomeScreen(
             )
         }
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .padding(paddingValues)
                 .fillMaxSize()
         ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                OutlinedTextField(
+                    value = searchText,
+                    onValueChange = { newText ->
+                        searchText = newText
+                    },
+                    label = {
+                        Text("검색어")
+                    },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f)
+                )
 
-            when {
-                state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
-                state.error != null -> Text("에러")
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp)
-                    ) {
-                        items(
-                            items = state.books,
-                            key = { book -> book.id }
-                        ) { book ->
-                            BookRow(
-                                book = book,
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = {
+                        onIntent(
+                            HomeIntent.Search(searchText)
+                        )
+                    }
+                ) {
+                    Text("검색")
+                }
+            }
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+            ) {
+
+                when {
+                    state.isLoading -> CircularProgressIndicator(Modifier.align(Alignment.Center))
+                    state.error != null -> {
+                        Column(
+                            modifier = Modifier.align(Alignment.Center),
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            Text(text = state.error)
+
+                            Spacer(modifier = Modifier.padding(8.dp))
+
+                            Button(
                                 onClick = {
-                                    onBookClick(book.id)
-                                },
-                                onBookmarkClick = {
-                                    onIntent(HomeIntent.ToggleBookmark(book.id))
+                                    onIntent(HomeIntent.Refresh)
                                 }
-                            )
-                            Spacer(modifier = Modifier.padding(6.dp))
+                            ) {
+                                Text("다시 시도")
+                            }
+                        }
+                    }
+
+                    else -> {
+                        LazyColumn(
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            items(
+                                items = state.books,
+                                key = { book -> book.id }
+                            ) { book ->
+                                BookRow(
+                                    book = book,
+                                    onClick = {
+                                        onBookClick(book.id)
+                                    },
+                                    onBookmarkClick = {
+                                        onIntent(HomeIntent.ToggleBookmark(book.id))
+                                    }
+                                )
+                                Spacer(modifier = Modifier.padding(6.dp))
+                            }
                         }
                     }
                 }
@@ -109,33 +174,29 @@ fun HomeScreen(
     }
 }
 
-
-@Preview(
-    showBackground = true,
-    showSystemUi = true
-)
+@Preview
 @Composable
-private fun HomeScreenPreview() {
+fun HomeScreenPreview() {
     KuitTheme {
         HomeScreen(
             state = HomeState(
                 isLoading = false,
                 books = listOf(
                     Book(
-                        id = 1,
+                        id = "1",
                         title = "Kotlin in Action",
                         author = "Dmitry Jemerov",
-                        pages = 360,
-                        year = 2017,
+                        pageCount = 360,
+                        publishedDate = "2017",
                         description = "코틀린을 설명하는 책입니다.",
                         isBookmarked = true
                     ),
                     Book(
-                        id = 2,
+                        id = "2",
                         title = "Clean Architecture",
                         author = "Robert C. Martin",
-                        pages = 432,
-                        year = 2017,
+                        pageCount = 432,
+                        publishedDate = "2017",
                         description = "소프트웨어 설계 원칙을 설명합니다.",
                         isBookmarked = false
                     )
@@ -148,5 +209,6 @@ private fun HomeScreenPreview() {
         )
     }
 }
+
 
 

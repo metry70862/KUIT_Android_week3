@@ -6,7 +6,7 @@ import com.sadturtleman.kuit.domain.repository.BookRepository
 class GetBookUseCase(
     private val repository: BookRepository
 ) {
-    operator fun invoke(id: Int): Book? {
+    suspend operator fun invoke(id: String): Book? {
         return repository.getBook(id)
     }
 }

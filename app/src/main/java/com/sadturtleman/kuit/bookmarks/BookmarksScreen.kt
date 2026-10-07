@@ -24,7 +24,7 @@ import com.sadturtleman.kuit.ui.theme.KuitTheme
 fun BookmarksScreen(
     state: BookmarksUiState,
     onIntent: (BookmarksIntent) -> Unit,
-    onBookClick: (Int) -> Unit,
+    onBookClick: (String) -> Unit,
     onBack: () -> Unit
 ) {
     Scaffold(
@@ -75,20 +75,20 @@ private fun BookmarksScreenPreview() {
             state = BookmarksUiState(
                 books = listOf(
                     Book(
-                        id = 1,
+                        id = "1",
                         title = "Kotlin in Action",
                         author = "Dmitry Jemerov",
-                        pages = 360,
-                        year = 2017,
+                        pageCount = 360,
+                        publishedDate = "2017",
                         description = "코틀린을 설명하는 책입니다.",
                         isBookmarked = true
                     ),
                     Book(
-                        id = 3,
+                        id = "3",
                         title = "Jetpack Compose 완벽 가이드",
                         author = "KUIT",
-                        pages = 320,
-                        year = 2025,
+                        pageCount = 320,
+                        publishedDate = "2025",
                         description = "Jetpack Compose를 설명하는 책입니다.",
                         isBookmarked = true
                     )
