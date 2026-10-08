@@ -6,7 +6,7 @@ data class HomeState(
     val isLoading: Boolean = false,
     val books: List<Book> = emptyList(),
     val error: String? = null,
-    val query: String = ""
+    val query: String = "Android"
 )
 
 sealed interface HomeIntent {
