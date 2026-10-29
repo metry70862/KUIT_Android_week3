@@ -28,11 +28,10 @@ data object Bookmarks : NavKey
 @Composable
 fun App() {
 
-    val homeViewModel: HomeViewModel =
-        hiltViewModel()
+    val homeViewModel: HomeViewModel = hiltViewModel()
 
-    val bookmarksViewModel: BookmarksViewModel =
-        hiltViewModel()
+    val bookmarksViewModel: BookmarksViewModel = hiltViewModel()
+    val bookmarksState by bookmarksViewModel.state.collectAsStateWithLifecycle()
 
 
     val backStack = rememberNavBackStack(Home)
@@ -49,6 +48,7 @@ fun App() {
                 HomeScreen(
                     state = state,
                     onIntent = homeViewModel::onIntent,
+                    bookmarkCount = bookmarksState.books.size,
                     onBookClick = { id -> //카드 누르면 detail로 이동
                         backStack.add(Detail(id))
                     },
@@ -78,10 +78,10 @@ fun App() {
             }
 
             entry<Bookmarks> {
-                val state by bookmarksViewModel.state.collectAsStateWithLifecycle()
+
 
                 BookmarksScreen(
-                    state = state,
+                    state = bookmarksState,
                     onIntent = bookmarksViewModel::onIntent,
                     onBookClick = { id -> //북마크화면에서 책 누르면 detail로 이동
                         backStack.add(Detail(id))

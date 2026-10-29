@@ -32,12 +32,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.sadturtleman.kuit.domain.model.Book
 import com.sadturtleman.kuit.ui.component.BookRow
-import com.sadturtleman.kuit.ui.theme.KuitTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -45,10 +42,10 @@ fun HomeScreen(
     state: HomeState,
     onIntent: (HomeIntent) -> Unit,
     onBookClick: (String) -> Unit,
-    onBookmarkClick: () -> Unit
+    onBookmarkClick: () -> Unit,
+    bookmarkCount: Int,
 ) {
     var searchText by remember { mutableStateOf("") }
-    val bookmarkCount = state.books.count { book -> book.isBookmarked }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -174,41 +171,7 @@ fun HomeScreen(
     }
 }
 
-@Preview
-@Composable
-fun HomeScreenPreview() {
-    KuitTheme {
-        HomeScreen(
-            state = HomeState(
-                isLoading = false,
-                books = listOf(
-                    Book(
-                        id = "1",
-                        title = "Kotlin in Action",
-                        author = "Dmitry Jemerov",
-                        pageCount = 360,
-                        publishedDate = "2017",
-                        description = "코틀린을 설명하는 책입니다.",
-                        isBookmarked = true
-                    ),
-                    Book(
-                        id = "2",
-                        title = "Clean Architecture",
-                        author = "Robert C. Martin",
-                        pageCount = 432,
-                        publishedDate = "2017",
-                        description = "소프트웨어 설계 원칙을 설명합니다.",
-                        isBookmarked = false
-                    )
-                ),
-                error = null
-            ),
-            onIntent = {},
-            onBookClick = {},
-            onBookmarkClick = {}
-        )
-    }
-}
+
 
 
 
