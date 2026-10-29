@@ -7,7 +7,7 @@ import javax.inject.Inject
 class GetBookUseCase @Inject constructor(
     private val repository: BookRepository
 ) {
-    suspend operator fun invoke(id: String): Book? {
+    suspend operator fun invoke(id: String): Book {
         return repository.getBook(id)
     }
 }

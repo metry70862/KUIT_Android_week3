@@ -7,7 +7,7 @@ interface BookRepository {
 
     fun observeBooks(query: String): Flow<List<Book>>
 
-    suspend fun getBook(id: String): Book?
+    suspend fun getBook(id: String): Book
 
     fun toggleBookmark(id: String): Book?
 
