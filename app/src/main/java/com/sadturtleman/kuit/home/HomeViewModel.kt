@@ -4,101 +4,80 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.sadturtleman.kuit.domain.usecase.GetBooksUseCase
 import com.sadturtleman.kuit.domain.usecase.ToggleBookmarkUseCase
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
-import java.net.UnknownHostException
+import javax.inject.Inject
 
-class HomeViewModel(
+@OptIn(ExperimentalCoroutinesApi::class)
+@HiltViewModel
+class HomeViewModel @Inject constructor(
     private val getBooksUseCase: GetBooksUseCase,
     private val toggleBookmarkUseCase: ToggleBookmarkUseCase
 ) : ViewModel() {
-    private val _state = MutableStateFlow(HomeState())
-    val state = _state.asStateFlow()
+    private val query = MutableStateFlow("Android")
+    private val refreshTrigger = MutableStateFlow(0) //리프레시 버튼 눌리면 값 변경
+    private val requestQueryFlow = combine(
+        query,
+        refreshTrigger
+    ) { query, _ -> query } //리프레시 트리거는 쓰레기값
 
-    init {
-        onIntent(HomeIntent.Refresh)
+
+    //검색어 받아서 Flow<HomeState>를 만들고 stateFlow로 변환
+    private val homeStateFlow = requestQueryFlow.flatMapLatest { query ->
+        val booksFlow = getBooksUseCase(query)
+
+        val stateFlow = booksFlow.map { books ->
+            HomeState(
+                isLoading = false,
+                books = books,
+                error = null,
+                query = query
+            )
+        }
+        stateFlow
+    }
+
+    val state = homeStateFlow.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = HomeState(
+            isLoading = true,
+            query = query.value
+        )
+    )
+
+    private fun refresh() {
+        refreshTrigger.update { it + 1 }
+    }
+
+    private fun search(newQuery: String) {
+        query.value = newQuery
+    }
+
+    private fun toggleBookmark(id: String) {
+        toggleBookmarkUseCase(id)
     }
 
     fun onIntent(intent: HomeIntent) {
         when (intent) {
-            HomeIntent.Refresh -> load()
-
-            is HomeIntent.ToggleBookmark -> {
-                toggleBookmark(intent.id)
+            HomeIntent.Refresh -> {
+                refresh()
             }
 
             is HomeIntent.Search -> {
                 search(intent.query)
             }
 
-        }
-    }
-
-    private fun search(query: String) {
-        if (query.isBlank()) {
-            return
-        }
-        load(query)
-    }
-
-    fun load(query: String=_state.value.query) = viewModelScope.launch { //코루틴 사용
-        //책 가져오기전 로딩
-        _state.update {
-            it.copy(
-                isLoading = true,
-                error = null,
-                query = query
-
-            )
-        }
-        runCatching {
-            getBooksUseCase(query)
-        }.onSuccess { books -> //성공시 책 가져온 후 로딩 화면 없애고 책 리스트 갱신
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    books = books
-                )
+            is HomeIntent.ToggleBookmark -> {
+                toggleBookmark(intent.id)
             }
-        }.onFailure { error -> //실패시 로딩 화면 없애고 에러 메시지 갱신
-            _state.update {
-                it.copy(
-                    isLoading = false,
-                    error = translateErrorMessage(error)
-                )
-            }
-        }
-
-
-    }
-
-    fun toggleBookmark(id: String) {
-        val updatedBook = toggleBookmarkUseCase(id) ?: return //책을 찾지 못하는 경우는 바로 종료
-
-        val currentBooks = _state.value.books
-
-        val updatedBooks = currentBooks.map { book ->
-            if (book.id == id) {
-                updatedBook
-            } else {
-                book
-            }
-        }
-
-        _state.update {
-            it.copy(
-                books = updatedBooks
-            )
-        }
-    }
-
-
-    fun translateErrorMessage(error: Throwable): String {
-        return when (error) {
-            is UnknownHostException -> "인터넷 연결을 확인하세요."
-            else -> "책을 불러오지 못했습니다."
         }
     }
 }
